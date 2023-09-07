@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+
+package sysmon;
+
+option go_package = "/sysmon";
+
+service SysmonData {
+  rpc getSysmonData (Param) returns (stream Data);
+}
+
+message Param {
+  int32 every_m = 1;
+  int32 average_n = 2;
+}
+
+
+message Data {
+  message Element {
+    repeated string header =1;
+    message ElementData{
+      repeated string  element=1;
+    }
+    repeated ElementData elements =2;
+  }
+  repeated Element data = 1;
+}

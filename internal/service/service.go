@@ -56,3 +56,11 @@ func (s *Service) Start() error {
 func (s *Service) Stop() error {
 	return nil
 }
+
+func (s *Service) getStatData() error {
+	return nil
+}
+
+func (s *Service) cleanOldData() error {
+	return nil
+}
