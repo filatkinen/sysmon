@@ -1,0 +1,76 @@
+package config
+
+import (
+	"github.com/spf13/viper"
+	"log"
+	"time"
+)
+
+const (
+	DefaultScrapeInterval = time.Second * 5
+	DefaultDepth          = time.Hour * 1
+	DefaultPort           = "50051"
+	DefaultAddress        = "0.0.0.0"
+)
+
+type ServiceConfig struct {
+	LA          bool
+	AvgCpu      bool
+	DisksLoad   bool
+	DisksInfo   bool
+	NetworkTop  bool
+	NetworkStat bool
+
+	ScrapeInterval time.Duration
+	Depth          time.Duration
+
+	Port    string
+	Address string
+}
+
+func NewConfig(in string) (ServiceConfig, error) {
+	viper.SetConfigType("yaml")
+	viper.SetConfigFile(in)
+	if err := viper.ReadInConfig(); err != nil {
+		return ServiceConfig{}, err
+	}
+
+	viper.SetDefault("subsystems.la", true)
+	viper.SetDefault("subsystems.avgcpu", true)
+	viper.SetDefault("subsystems.disksload", true)
+	viper.SetDefault("subsystems.disksinfo", true)
+	viper.SetDefault("subsystems.networktop", true)
+	viper.SetDefault("subsystems.networkstat", true)
+
+	viper.SetDefault("scrapeinterval", DefaultScrapeInterval.String())
+
+	viper.SetDefault("bindings.port", DefaultPort)
+	viper.SetDefault("bindings.address", DefaultAddress)
+
+	duration, err := time.ParseDuration(viper.GetString("scrapeinterval"))
+	if err != nil {
+		log.Printf("Error parsing scrapeinterval value: %s, using defaul tvalue:%s", err.Error(), DefaultScrapeInterval)
+		duration = DefaultScrapeInterval
+	}
+
+	depth, err := time.ParseDuration(viper.GetString("depth"))
+	if err != nil {
+		log.Printf("Error parsing scrapeinterval value: %s, using defaul tvalue:%s", err.Error(), DefaultDepth)
+		depth = DefaultDepth
+	}
+
+	config := ServiceConfig{
+		LA:             viper.GetBool("subsystems.la"),
+		AvgCpu:         viper.GetBool("subsystems.avgcpu"),
+		DisksLoad:      viper.GetBool("subsystems.disksload"),
+		DisksInfo:      viper.GetBool("subsystems.disksinfo"),
+		NetworkTop:     viper.GetBool("subsystems.networktop"),
+		NetworkStat:    viper.GetBool("subsystems.networkstat"),
+		Port:           viper.GetString("bindings.port"),
+		Address:        viper.GetString("bindings.address"),
+		ScrapeInterval: duration,
+		Depth:          depth,
+	}
+
+	return config, nil
+}
