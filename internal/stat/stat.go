@@ -12,34 +12,34 @@ var (
 type Stat struct {
 }
 
-func (s Stat) LoadAvg() (model.DataLoadAvg, error) {
+func (s Stat) LoadAvg() (model.ElMapType, error) {
 	return loadAvg()
 }
 
-func (s Stat) CpuAvgStats() (model.DataCpuAvgStats, error) {
+func (s Stat) CpuAvgStats() (model.ElMapType, error) {
 	return cpuAvgStats()
 }
 
-func (s Stat) DisksLoad() ([]model.DataDisksLoad, error) {
+func (s Stat) DisksLoad() (model.ElMapType, error) {
 	return disksLoad()
 }
 
-func (s Stat) DisksUsage() ([]model.DataDisksUsage, error) {
+func (s Stat) DisksUsage() (model.ElMapType, error) {
 	return disksUsage()
 }
 
-func (s Stat) NetworkListen() ([]model.DataNetworkListen, error) {
+func (s Stat) NetworkListen() (model.ElMapType, error) {
 	return networkListen()
 }
 
-func (s Stat) NetworkStates() ([]model.DataNetworkStates, error) {
+func (s Stat) NetworkStates() (model.ElMapType, error) {
 	return networkStates()
 }
 
-func (s Stat) TopNetworkProto() ([]model.DataTopNetworkProto, error) {
+func (s Stat) TopNetworkProto() (model.ElMapType, error) {
 	return topNetworkProto()
 }
 
-func (s Stat) TopNetworkTraffic() ([]model.DataTopNetworkTraffic, error) {
+func (s Stat) TopNetworkTraffic() (model.ElMapType, error) {
 	return topNetworkTraffic()
 }

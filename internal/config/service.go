@@ -8,6 +8,7 @@ import (
 
 const (
 	DefaultScrapeInterval = time.Second * 5
+	DefaultCleanInterval  = time.Minute * 5
 	DefaultDepth          = time.Hour * 1
 	DefaultPort           = "50051"
 	DefaultAddress        = "0.0.0.0"
@@ -22,6 +23,7 @@ type ServiceConfig struct {
 	NetworkStat bool
 
 	ScrapeInterval time.Duration
+	CleanInterval  time.Duration
 	Depth          time.Duration
 
 	Port    string
@@ -59,6 +61,12 @@ func NewConfig(in string) (ServiceConfig, error) {
 		depth = DefaultDepth
 	}
 
+	clean, err := time.ParseDuration(viper.GetString("cleaninterval"))
+	if err != nil {
+		log.Printf("Error parsing cleaninterval value: %s, using defaul tvalue:%s", err.Error(), DefaultCleanInterval)
+		clean = DefaultCleanInterval
+	}
+
 	config := ServiceConfig{
 		LA:             viper.GetBool("subsystems.la"),
 		AvgCpu:         viper.GetBool("subsystems.avgcpu"),
@@ -70,6 +78,7 @@ func NewConfig(in string) (ServiceConfig, error) {
 		Address:        viper.GetString("bindings.address"),
 		ScrapeInterval: duration,
 		Depth:          depth,
+		CleanInterval:  clean,
 	}
 
 	return config, nil

@@ -6,22 +6,33 @@ package sysmon;
 option go_package = "/sysmon";
 
 service SysmonData {
-  rpc getSysmonData (Param) returns (stream Data);
+  rpc SendSysmonDataToClient (QueryParam) returns (stream Data);
 }
 
-message Param {
+message QueryParam {
   int32 every_m = 1;
   int32 average_n = 2;
 }
 
+//Data:
+//  Header1:
+//     Line1: el, el
+//     Line2: el, el
+//  Header2:
+//     Line1: el, el, el
+//     Line2: el, el, el
+//     Line3: el, el, el
+//message Data {
+//  message Element {
+//    string header =1;
+//    message ElementData{
+//      repeated string  el=1;
+//    }
+//    repeated ElementData line =2;
+//  }
+//  repeated Element data = 1;
+//}
 
 message Data {
-  message Element {
-    repeated string header =1;
-    message ElementData{
-      repeated string  element=1;
-    }
-    repeated ElementData elements =2;
-  }
-  repeated Element data = 1;
+  bytes data =1;
 }

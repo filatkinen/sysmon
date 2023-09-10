@@ -4,18 +4,18 @@ package stat
 
 import "github.com/filatkinen/sysmon/internal/model"
 
-func networkListen() ([]model.DataNetworkListen, error) {
-	return []model.DataNetworkListen{}, nil
+func networkListen() (model.ElMapType, error) {
+	return nil, nil
 }
 
-func networkStates() ([]model.DataNetworkStates, error) {
-	return []model.DataNetworkStates{}, nil
+func networkStates() (model.ElMapType, error) {
+	return nil, nil
 }
 
-func topNetworkProto() ([]model.DataTopNetworkProto, error) {
-	return []model.DataTopNetworkProto{}, nil
+func topNetworkProto() (model.ElMapType, error) {
+	return nil, nil
 }
 
-func topNetworkTraffic() ([]model.DataTopNetworkTraffic, error) {
-	return []model.DataTopNetworkTraffic{}, nil
+func topNetworkTraffic() (model.ElMapType, error) {
+	return nil, nil
 }

@@ -7,7 +7,8 @@ subsystems:
   networkstat: true
 
 scrapeinterval: 1s  #default time=5s
-depth: 2h // default 1h
+cleaninterval: 1m  #default time=5m
+depth: 2h  #default 1h
 
 bindings:
   port: 50051 # default = 50051
