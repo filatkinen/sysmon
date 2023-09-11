@@ -2,13 +2,21 @@
 
 package stat
 
-import "github.com/filatkinen/sysmon/internal/model"
+import (
+	"github.com/filatkinen/sysmon/internal/model"
+	"math/rand"
+	"time"
+)
 
 func disksLoad() (model.ElMapType, error) {
 	return nil, nil
 }
 
 func disksUsage() (model.ElMapType, error) {
+
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+	n1 := r1.Intn(5) + 1
 	disks := []struct {
 		disk string
 		tps  float64
@@ -31,21 +39,28 @@ func disksUsage() (model.ElMapType, error) {
 		line := make([]model.Element, 0, 3)
 
 		var disk, tps, kbs model.Element
-
-		disk.StringField = v.disk
+		if n1 == 3 {
+			disk.StringField = v.disk + "/New"
+		} else {
+			disk.StringField = v.disk
+		}
 		line = append(line, disk)
 
-		tps.NumberField = v.tps
+		tps.NumberField = v.tps * float64(n1)
 		tps.CountAble = true
 		tps.DecimalField = 2
 		line = append(line, tps)
 
-		kbs.NumberField = v.kbs
+		kbs.NumberField = v.kbs * float64(n1)
 		kbs.CountAble = true
 		kbs.DecimalField = 2
 		line = append(line, tps)
 
-		m[v.disk] = line
+		if n1 == 3 {
+			m[v.disk+"/New"] = line
+		} else {
+			m[v.disk] = line
+		}
 	}
 
 	return m, nil

@@ -8,7 +8,7 @@ subsystems:
 
 scrapeinterval: 1s  #default time=5s
 cleaninterval: 1m  #default time=5m
-depth: 2h  #default 1h
+depth: 2m  #default 1h
 
 bindings:
   port: 50051 # default = 50051

@@ -13,8 +13,8 @@ import (
 )
 
 func main() {
-	var everyM = flag.Int("M", 15, "average period")
-	var averageN = flag.Int("N", 5, "query period")
+	var everyM = flag.Int("M", 5, "average period")
+	var averageN = flag.Int("N", 15, "query period")
 	var port = flag.String("port", "50051", "server's port")
 	var address = flag.String("address", "localhost", "server's address")
 

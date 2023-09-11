@@ -27,7 +27,7 @@ func NewService(serviceConfig config.ServiceConfig, statSource internal.StatGett
 	if serviceConfig.Depth < serviceConfig.ScrapeInterval {
 		return nil, errors.New("depth interval cannot be less then scrap interval")
 	}
-	maxElements := int((serviceConfig.Depth/serviceConfig.ScrapeInterval)/time.Second) + 1
+	maxElements := int((serviceConfig.Depth / serviceConfig.ScrapeInterval)) + 1
 	log.Printf("Creating sysmon service: %+v\n", serviceConfig)
 	return &Service{
 		stat:     statSource,
@@ -210,7 +210,7 @@ func (s *Service) cleanOldData() {
 			num := len(s.data.Index) - s.data.MaxElements
 			if num > 0 {
 				for i := 0; i < num; i++ {
-					idx := s.data.Index[len(s.data.Index)-1]
+					idx := s.data.Index[0]
 					delete(s.data.Elements, idx)
 					s.data.Index = s.data.Index[1:len(s.data.Index)]
 				}
@@ -238,6 +238,7 @@ func (s *Service) countDataClient(averageN int) (*model.StampsData, bool, error)
 	}
 	lastdata := s.data.Elements[s.data.Index[quantityElements-1]]
 	clientData := copyStampsData(lastdata)
+
 	for count := 2; count <= quantityCl; count++ {
 		clientData = sumStampsData(*clientData, s.data.Elements[s.data.Index[quantityElements-count]])
 	}
