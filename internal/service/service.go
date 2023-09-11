@@ -248,14 +248,14 @@ func (s *Service) countDataClient(averageN int) (*model.StampsData, bool, error)
 
 func copyStampsData(source model.StampsData) *model.StampsData {
 	var m model.StampsData
-	m.Data = append([]model.StampsElements(nil), source.Data...)
-	//for i := range source.Data {
-	//	m.Data[i].IdxStampNameHeaders = source.Data[i].IdxStampNameHeaders
-	//	m.Data[i].ElMap = make(map[string][]model.Element, len(source.Data[i].ElMap))
-	//	for k := range source.Data[i].ElMap {
-	//		m.Data[i].ElMap[k] = append([]model.Element(nil), source.Data[i].ElMap[k]...)
-	//	}
-	//}
+	m.Data = make([]model.StampsElements, len(source.Data))
+	for i := range source.Data {
+		m.Data[i].IdxStampNameHeaders = source.Data[i].IdxStampNameHeaders
+		m.Data[i].ElMap = make(map[string][]model.Element, len(source.Data[i].ElMap))
+		for k := range source.Data[i].ElMap {
+			m.Data[i].ElMap[k] = append([]model.Element(nil), source.Data[i].ElMap[k]...)
+		}
+	}
 	return &m
 }
 
