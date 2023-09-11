@@ -280,7 +280,6 @@ func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData {
 			case ok1 && ok2:
 				m.Data[i].ElMap[k] = make([]model.Element, 0, len(s1.Data[i].ElMap[k]))
 				for idx, v := range s1.Data[i].ElMap[k] {
-					v := v
 					if v.CountAble {
 						v.NumberField += s2.Data[i].ElMap[k][idx].NumberField
 					}
