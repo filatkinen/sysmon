@@ -54,7 +54,7 @@ func disksUsage() (model.ElMapType, error) {
 		kbs.NumberField = v.kbs * float64(n1)
 		kbs.CountAble = true
 		kbs.DecimalField = 2
-		line = append(line, tps)
+		line = append(line, kbs)
 
 		if n1 == 3 {
 			m[v.disk+"/New"] = line

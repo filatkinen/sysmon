@@ -242,7 +242,7 @@ func (s *Service) countDataClient(averageN int) (*model.StampsData, bool, error)
 	for count := 2; count <= quantityCl; count++ {
 		clientData = sumStampsData(*clientData, s.data.Elements[s.data.Index[quantityElements-count]])
 	}
-	averageStampsData(clientData, quantityCl)
+	averageStampsData(clientData)
 	return clientData, true, nil
 }
 
@@ -276,31 +276,45 @@ func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData {
 		for k := range hashI {
 			_, ok1 := s1.Data[i].ElMap[k]
 			_, ok2 := s2.Data[i].ElMap[k]
+			m.Data[i].ElMap[k] = make([]model.Element, 0, len(s1.Data[i].ElMap[k]))
 			switch {
 			case ok1 && ok2:
-				m.Data[i].ElMap[k] = make([]model.Element, 0, len(s1.Data[i].ElMap[k]))
 				for idx, v := range s1.Data[i].ElMap[k] {
 					if v.CountAble {
 						v.NumberField += s2.Data[i].ElMap[k][idx].NumberField
 					}
+					if v.Count == 0 {
+						v.Count = 1
+					}
+					v.Count++
 					m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], v)
 				}
 			case ok1:
-				m.Data[i].ElMap[k] = append([]model.Element(nil), s1.Data[i].ElMap[k]...)
+				for _, v := range s1.Data[i].ElMap[k] {
+					v.Count = 1
+					m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], v)
+				}
 			case ok2:
-				m.Data[i].ElMap[k] = append([]model.Element(nil), s2.Data[i].ElMap[k]...)
+				for _, v := range s2.Data[i].ElMap[k] {
+					v.Count = 1
+					m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], v)
+				}
 			}
 		}
 	}
 	return &m
 }
 
-func averageStampsData(s *model.StampsData, count int) {
+func averageStampsData(s *model.StampsData) {
 	for i := range s.Data {
 		for k := range s.Data[i].ElMap {
 			for idx := range s.Data[i].ElMap[k] {
 				if s.Data[i].ElMap[k][idx].CountAble {
-					s.Data[i].ElMap[k][idx].NumberField = s.Data[i].ElMap[k][idx].NumberField / float64(count)
+					if s.Data[i].ElMap[k][idx].Count == 0 {
+						s.Data[i].ElMap[k][idx].Count = 1
+					}
+					s.Data[i].ElMap[k][idx].NumberField = s.Data[i].ElMap[k][idx].NumberField /
+						float64(s.Data[i].ElMap[k][idx].Count)
 				}
 			}
 		}
