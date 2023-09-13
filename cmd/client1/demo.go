@@ -8,19 +8,68 @@ import (
 	"errors"
 	"fmt"
 	"github.com/GoryMoon/gocui"
+	"github.com/filatkinen/sysmon/internal/model"
 	"log"
 )
 
-func nextView(g *gocui.Gui, v *gocui.View) error {
-	if v == nil || v.Name() == "side" {
-		_, err := g.SetCurrentView("main")
+type ClientView struct {
+	g      *gocui.Gui
+	params []string
+	data   []model.DataToClientStamp
+}
+
+func NewClientView() (*ClientView, error) {
+	g, err := gocui.NewGui(gocui.OutputNormal, true)
+	if err != nil {
+		return nil, err
+	}
+
+	g.Highlight = true
+	g.Cursor = true
+	g.SelFgColor = gocui.ColorGreen
+
+	return &ClientView{g: g}, nil
+}
+
+func (c *ClientView) Start() error {
+	c.g.SetManagerFunc(c.layout)
+
+	if err := c.keybindings(c.g); err != nil {
 		return err
 	}
-	_, err := g.SetCurrentView("side")
+	if err := c.g.MainLoop(); err != nil && !errors.Is(err, gocui.ErrQuit) {
+		return err
+	}
+	return nil
+}
+
+func (c *ClientView) Stop() error {
+	c.Close()
+	return nil
+}
+
+func (c *ClientView) Close() {
+	c.g.Close()
+}
+
+func (c *ClientView) nextView(g *gocui.Gui, v *gocui.View) error {
+	if v == nil || v.Name() == "main" {
+		_, err := g.SetCurrentView("side")
+		return err
+	}
+	_, err := g.SetCurrentView("main")
 	return err
 }
 
-func cursorDown(g *gocui.Gui, v *gocui.View) error {
+func (c *ClientView) GetData(m []model.DataToClientStamp) error {
+	c.params = nil
+	for i := range m {
+		c.params = append(c.params, m[i].Name)
+	}
+
+}
+
+func (c *ClientView) cursorDown(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		cx, cy := v.Cursor()
 		if err := v.SetCursor(cx, cy+1); err != nil {
@@ -33,7 +82,7 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-func cursorUp(g *gocui.Gui, v *gocui.View) error {
+func (c *ClientView) cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if v != nil {
 		ox, oy := v.Origin()
 		cx, cy := v.Cursor()
@@ -46,50 +95,33 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	return nil
 }
 
-//func delMsg(g *gocui.Gui, v *gocui.View) error {
-//	if err := g.DeleteView("msg"); err != nil {
-//		return err
-//	}
-//	if _, err := g.SetCurrentView("side"); err != nil {
-//		return err
-//	}
-//	return nil
-//}
-
-func quit(g *gocui.Gui, v *gocui.View) error {
+func (c *ClientView) quit(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
 }
 
-func keybindings(g *gocui.Gui) error {
-	if err := g.SetKeybinding("side", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
+func (c *ClientView) keybindings(g *gocui.Gui) error {
+	if err := g.SetKeybinding("side", gocui.KeyTab, gocui.ModNone, c.nextView); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("main", gocui.KeyTab, gocui.ModNone, nextView); err != nil {
+	if err := g.SetKeybinding("main", gocui.KeyTab, gocui.ModNone, c.nextView); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("side", gocui.KeyArrowDown, gocui.ModNone, cursorDown); err != nil {
+	if err := g.SetKeybinding("side", gocui.KeyArrowDown, gocui.ModNone, c.cursorDown); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("side", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
+	if err := g.SetKeybinding("side", gocui.KeyArrowUp, gocui.ModNone, c.cursorUp); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quit); err != nil {
+	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, c.quit); err != nil {
 		return err
 	}
-	//if err := g.SetKeybinding("side", gocui.KeyEnter, gocui.ModNone, getLine); err != nil {
-	//	return err
-	//}
-	//if err := g.SetKeybinding("msg", gocui.KeyEnter, gocui.ModNone, delMsg); err != nil {
-	//	return err
-	//}
-
 	return nil
 }
 
-func layout(g *gocui.Gui) error {
+func (c *ClientView) layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
 	g.Cursor = false
-	if v, err := g.SetView("keybinding", 0, 0, 30, 3, 0); err != nil {
+	if v, err := g.SetView("keybinding", 0, 0, 30, 4, 0); err != nil {
 		if !errors.Is(err, gocui.ErrUnknownView) {
 			return err
 		}
@@ -102,7 +134,7 @@ func layout(g *gocui.Gui) error {
 
 	}
 
-	if v, err := g.SetView("side", 0, 4, 30, 4+4, 0); err != nil {
+	if v, err := g.SetView("side", 0, 5, 30, 4+4, 0); err != nil {
 		if !errors.Is(err, gocui.ErrUnknownView) {
 			return err
 		}
@@ -113,6 +145,9 @@ func layout(g *gocui.Gui) error {
 		fmt.Fprintln(v, "Item 1")
 		fmt.Fprintln(v, "Item 2")
 		fmt.Fprintln(v, "Item 3")
+		if _, err := g.SetCurrentView("side"); err != nil {
+			return err
+		}
 
 	}
 	if v, err := g.SetView("main", 30, 0, maxX-1, maxY-1, 0); err != nil {
@@ -126,32 +161,21 @@ func layout(g *gocui.Gui) error {
 		v.Editable = true
 		//v.Wrap = true
 		//v.Autoscroll =
-		if _, err := g.SetCurrentView("main"); err != nil {
-			return err
-		}
+
 	}
 	return nil
 }
 
 func main() {
-	g, err := gocui.NewGui(gocui.OutputNormal, true)
+
+	c, err := NewClientView()
 	if err != nil {
-		log.Panicln(err)
+		log.Println(err)
+		return
 	}
-	defer g.Close()
-
-	g.Highlight = true
-	g.Cursor = true
-	g.Cursor = true
-	g.SelFgColor = gocui.ColorGreen
-
-	g.SetManagerFunc(layout)
-
-	if err := keybindings(g); err != nil {
-		log.Panicln(err)
-	}
-
-	if err := g.MainLoop(); err != nil && !errors.Is(err, gocui.ErrQuit) {
-		log.Panicln(err)
+	defer c.Close()
+	err = c.Start()
+	if err != nil {
+		log.Println(err)
 	}
 }
