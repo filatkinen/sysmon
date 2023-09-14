@@ -2,16 +2,17 @@ package service
 
 import (
 	"errors"
-	"github.com/filatkinen/sysmon/internal"
-	"github.com/filatkinen/sysmon/internal/config"
-	pb "github.com/filatkinen/sysmon/internal/grpc/sysmon"
-	"github.com/filatkinen/sysmon/internal/model"
-	"google.golang.org/grpc"
 	"log"
 	"net"
 	"runtime"
 	"sync"
 	"time"
+
+	"github.com/filatkinen/sysmon/internal"
+	"github.com/filatkinen/sysmon/internal/config"
+	pb "github.com/filatkinen/sysmon/internal/grpc/sysmon"
+	"github.com/filatkinen/sysmon/internal/model"
+	"google.golang.org/grpc"
 )
 
 type Service struct {
@@ -91,7 +92,7 @@ func (s *Service) Stop() error {
 	return nil
 }
 
-func (s *Service) getStatData() {
+func (s *Service) getStatData() { //nolint:funlen
 	ticker := time.NewTicker(s.conf.ScrapeInterval)
 	defer func() {
 		ticker.Stop()
@@ -127,15 +128,16 @@ func (s *Service) getStatData() {
 	}
 
 	collectStat := func() {
-		var LoadAvg, CpuAvgStats, DisksLoad, DisksInfo, NetworkListen, NetworkStates, TopNetworkProto, TopNetworkTraffic model.ElMapType
+		var LoadAvg, CPUAvgStats, DisksLoad, DisksInfo, NetworkListen, NetworkStates,
+			TopNetworkProto, TopNetworkTraffic model.ElMapType
 		switch {
 		case s.conf.LA:
 			wgService.Add(1)
 			go func() { LoadAvg = getstat(s.stat.LoadAvg) }()
 			fallthrough
-		case s.conf.AvgCpu:
+		case s.conf.AvgCPU:
 			wgService.Add(1)
-			go func() { CpuAvgStats = getstat(s.stat.CpuAvgStats) }()
+			go func() { CPUAvgStats = getstat(s.stat.CPUAvgStats) }()
 			fallthrough
 		case s.conf.DisksInfo:
 			wgService.Add(1)
@@ -163,8 +165,8 @@ func (s *Service) getStatData() {
 		case s.conf.LA:
 			addstat(&sd, LoadAvg, 0)
 			fallthrough
-		case s.conf.AvgCpu:
-			addstat(&sd, CpuAvgStats, 1)
+		case s.conf.AvgCPU:
+			addstat(&sd, CPUAvgStats, 1)
 			fallthrough
 		case s.conf.DisksInfo:
 			addstat(&sd, DisksInfo, 2)
@@ -222,14 +224,14 @@ func (s *Service) cleanOldData() {
 	}
 }
 
-func (s *Service) countDataClient(averageN int) (*model.StampsData, bool, error) {
+func (s *Service) countDataClient(averageN int) (*model.StampsData, bool) {
 	s.data.Lock.RLock()
 	defer s.data.Lock.RUnlock()
 
 	quantityElements := len(s.data.Index)
 	scrapeSeconds := int(s.conf.ScrapeInterval / time.Second)
 	if scrapeSeconds*quantityElements < averageN {
-		return nil, false, nil
+		return nil, false
 	}
 
 	quantityCl := averageN / scrapeSeconds
@@ -243,7 +245,7 @@ func (s *Service) countDataClient(averageN int) (*model.StampsData, bool, error)
 		clientData = sumStampsData(*clientData, s.data.Elements[s.data.Index[quantityElements-count]])
 	}
 	averageStampsData(clientData)
-	return clientData, true, nil
+	return clientData, true
 }
 
 func copyStampsData(source model.StampsData) *model.StampsData {
@@ -259,9 +261,9 @@ func copyStampsData(source model.StampsData) *model.StampsData {
 	return &m
 }
 
-func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData {
+func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData { //nolint:gocognit
 	var m model.StampsData
-	m.Data = make([]model.StampsElements, len(s1.Data), len(s1.Data))
+	m.Data = make([]model.StampsElements, len(s1.Data))
 	for i := range s1.Data {
 		hashI := make(map[string]bool, len(s1.Data[i].ElMap))
 		for k := range s1.Data[i].ElMap {
@@ -313,8 +315,7 @@ func averageStampsData(s *model.StampsData) {
 					if s.Data[i].ElMap[k][idx].Count == 0 {
 						s.Data[i].ElMap[k][idx].Count = 1
 					}
-					s.Data[i].ElMap[k][idx].NumberField = s.Data[i].ElMap[k][idx].NumberField /
-						float64(s.Data[i].ElMap[k][idx].Count)
+					s.Data[i].ElMap[k][idx].NumberField /= float64(s.Data[i].ElMap[k][idx].Count)
 				}
 			}
 		}

@@ -1,97 +1,97 @@
 package model
 
-//// DataLoadAvg represents the load average of the system
-////
-////	Avg1 - The average processor workload of the last minute
-////	Avg2 - The average processor workload of the last 5 minutes
-////	Avg3 - The average processor workload of the last 15 minutes
-//type DataLoadAvg struct {
-//	Avg1 float64
-//	Avg2 float64
-//	Avg3 float64
-//}
-//
-//// DataCpuAvgStats represents the average cpu load
-////
-////	User, System, Idle
-//type DataCpuAvgStats struct {
-//	User   float64
-//	System float64
-//	Idle   float64
-//}
-//
-//// DataDisksLoad represents the  Disks Load
-////
-////	Device  -like nvme, sda,  etc
-////	Tps - transfers per second
-////	Kbps - KB/s (kilobytes (read+write) per second
-//type DataDisksLoad struct {
-//	Device string
-//	Tps    int64
-//	Kbps   float64
-//}
-//
-//// DataDisksUsage represents the  Disks usage information
-////
-////	MountPoint   - mount point
-////	FileSystem   - file system(ext4, etc)
-////	Inode        - usage inodes
-////	InodePercent - usage inodes percent
-////	Mb           - usage Mbytes
-////	MbPercent    - usage Mbytes percent
-//type DataDisksUsage struct {
-//	MountPoint   string
-//	FileSystem   string
-//	Inode        int64
-//	InodePercent float64
-//	Mb           float64
-//	MbPercent    float64
-//}
-//
-//// DataTopNetworkProto represents the  top talkers network by proto
-////
-////	Proto -        Protocol (TCP, UDP..)
-////	Bytes  -       bytes
-////	BytesPercent - bytes percent
-//type DataTopNetworkProto struct {
-//	Proto        string
-//	Bytes        int64
-//	BytesPercent float64
-//}
-//
-//// DataTopNetworkTraffic represents the  top talkers network by Source/Dest
-////
-////	Source      - source:port
-////	Destination - destination:port
-////	Proto       - protocol
-////	Bps			- bytes per second
-//type DataTopNetworkTraffic struct {
-//	Source      string
-//	Destination string
-//	Proto       string
-//	Bps         int64
-//}
-//
-//// DataNetworkListen represents the stat of listen connections
-////
-////	Proto   - protocol
-////	Command - command
-////	Pid     - pid
-////	User    - user
-////	Port    - port
-//type DataNetworkListen struct {
-//	Proto   string
-//	Command string
-//	Pid     int64
-//	User    string
-//	Port    int64
-//}
-//
-//// DataNetworkStates represents the stat of listen connections
-////
-////	State - ESTAB, FIN_WAIT, SYN_RCV, etc
-////	Number - number of states connections
-//type DataNetworkStates struct {
-//	State  string
-//	Number int64
-//}
+import (
+	"sync"
+)
+
+type NameHeader struct {
+	Name            string
+	Header          []string
+	SortHeaderField int
+	SortDescending  bool
+}
+
+var StampNameHeaders = []NameHeader{
+	{
+		Name:            "LoadAvg",
+		Header:          append([]string(nil), "5 min", "10 min", "15 min"),
+		SortHeaderField: 0,
+		SortDescending:  false,
+	},
+	{
+		Name:            "CPUAvgStats",
+		Header:          append([]string(nil), "User", "System", "Idle"),
+		SortHeaderField: 0,
+		SortDescending:  false,
+	},
+	{
+		Name:            "DisksLoad",
+		Header:          append([]string(nil), "Device", "Tps", "Kbps"),
+		SortHeaderField: 1,
+		SortDescending:  true,
+	},
+	{
+		Name: "DisksUsage",
+		Header: append([]string(nil), "Mount Point", "File System",
+			"Usage Inodes", "Usage Inode Percent", "Usage Mb", "Usage Mb Percent"),
+		SortHeaderField: 0,
+		SortDescending:  false,
+	},
+	{
+		Name:            "NetworkListen",
+		Header:          append([]string(nil), "Protocol", "Command", "PID", "USER", "PORT"),
+		SortHeaderField: 0,
+		SortDescending:  false,
+	},
+	{
+		Name:            "NetworkStates",
+		Header:          append([]string(nil), "Status", "Number"),
+		SortHeaderField: 0,
+		SortDescending:  false,
+	},
+	{
+		Name:            "TopNetworkProto",
+		Header:          append([]string(nil), "Protocol", "Bytes", "Bytes Percent"),
+		SortHeaderField: 2,
+		SortDescending:  true,
+	},
+	{
+		Name:            "TopNetworkTraffic",
+		Header:          append([]string(nil), "Source", "Destination", "Protocol", "Bps"),
+		SortHeaderField: 3,
+		SortDescending:  true,
+	},
+}
+
+type Element struct {
+	CountAble    bool
+	StringField  string
+	NumberField  float64
+	DecimalField int
+	Count        int
+}
+
+type ElMapType map[string][]Element
+
+type StampsElements struct {
+	ElMap               ElMapType
+	IdxStampNameHeaders int
+}
+
+type StampsData struct {
+	Data []StampsElements
+}
+
+type Data struct {
+	Elements    map[int]StampsData
+	Index       []int
+	Counter     int
+	MaxElements int
+	Lock        sync.RWMutex
+}
+
+type DataToClientStamp struct {
+	Name      string
+	IdxHeader int
+	Data      [][]string
+}

@@ -1,9 +1,10 @@
 package config
 
 import (
-	"github.com/spf13/viper"
 	"log"
 	"time"
+
+	"github.com/spf13/viper"
 )
 
 const (
@@ -16,7 +17,7 @@ const (
 
 type ServiceConfig struct {
 	LA          bool
-	AvgCpu      bool
+	AvgCPU      bool
 	DisksLoad   bool
 	DisksInfo   bool
 	NetworkTop  bool
@@ -69,7 +70,7 @@ func NewConfig(in string) (ServiceConfig, error) {
 
 	config := ServiceConfig{
 		LA:             viper.GetBool("subsystems.la"),
-		AvgCpu:         viper.GetBool("subsystems.avgcpu"),
+		AvgCPU:         viper.GetBool("subsystems.avgcpu"),
 		DisksLoad:      viper.GetBool("subsystems.disksload"),
 		DisksInfo:      viper.GetBool("subsystems.disksinfo"),
 		NetworkTop:     viper.GetBool("subsystems.networktop"),

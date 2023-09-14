@@ -4,7 +4,7 @@ import "github.com/filatkinen/sysmon/internal/model"
 
 type StatGetter interface {
 	LoadAvg() (model.ElMapType, error)
-	CpuAvgStats() (model.ElMapType, error)
+	CPUAvgStats() (model.ElMapType, error)
 	DisksLoad() (model.ElMapType, error)
 	DisksUsage() (model.ElMapType, error)
 	NetworkListen() (model.ElMapType, error)

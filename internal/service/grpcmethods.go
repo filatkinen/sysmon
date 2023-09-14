@@ -2,14 +2,17 @@ package service
 
 import (
 	"encoding/json"
-	pb "github.com/filatkinen/sysmon/internal/grpc/sysmon"
-	"github.com/filatkinen/sysmon/internal/model"
 	"sort"
 	"strconv"
 	"time"
+
+	pb "github.com/filatkinen/sysmon/internal/grpc/sysmon"
+	"github.com/filatkinen/sysmon/internal/model"
 )
 
-func (s *Service) SendSysmonDataToClient(param *pb.QueryParam, server pb.SysmonData_SendSysmonDataToClientServer) error {
+func (s *Service) SendSysmonDataToClient(param *pb.QueryParam,
+	server pb.SysmonData_SendSysmonDataToClientServer,
+) error {
 	ticker := time.NewTicker(time.Second * time.Duration(param.EveryM))
 	s.wg.Add(1)
 	defer func() {
@@ -19,10 +22,7 @@ func (s *Service) SendSysmonDataToClient(param *pb.QueryParam, server pb.SysmonD
 
 	sendData := func() error {
 		var dataPB pb.Data
-		dataSevice, dataReady, err := s.countDataClient(int(param.AverageN))
-		if err != nil {
-			return err
-		}
+		dataSevice, dataReady := s.countDataClient(int(param.AverageN))
 		if dataReady {
 			r := prepareData(dataSevice)
 			b, e := json.Marshal(&r)
@@ -112,7 +112,7 @@ func prepareDataStamp(data model.ElMapType, headerIdx int) model.DataToClientSta
 	return result
 }
 
-// default return with 2 digit after point
+// default return with 2 digit after point.
 func floatToString(number float64, precision ...int) string {
 	if len(precision) > 0 {
 		return strconv.FormatFloat(number, 'f', precision[0], 64)

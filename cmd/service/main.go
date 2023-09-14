@@ -2,13 +2,14 @@ package main
 
 import (
 	"flag"
-	"github.com/filatkinen/sysmon/internal/config"
-	"github.com/filatkinen/sysmon/internal/service"
-	"github.com/filatkinen/sysmon/internal/stat"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
+
+	"github.com/filatkinen/sysmon/internal/config"
+	"github.com/filatkinen/sysmon/internal/service"
+	"github.com/filatkinen/sysmon/internal/stat"
 )
 
 func main() {

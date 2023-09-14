@@ -4,39 +4,31 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+
 	pb "github.com/filatkinen/sysmon/internal/grpc/sysmon"
 	"github.com/filatkinen/sysmon/internal/model"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"io"
 )
 
-type DataSlice struct {
-	slice []Element
+type SysMon struct {
+	client   pb.SysmonDataClient
+	conn     *grpc.ClientConn
+	addr     string
+	everyM   int
+	averageN int
 }
 
-type Element struct {
-	header string
-	data   [][]string
-}
-
-type ClientSysMon struct {
-	client    pb.SysmonDataClient
-	conn      *grpc.ClientConn
-	addr      string
-	every_m   int
-	average_n int
-}
-
-func NewClientSysMon(address string, every_m, average_n int) *ClientSysMon {
-	return &ClientSysMon{
-		addr:      address,
-		every_m:   every_m,
-		average_n: average_n,
+func NewClient(address string, everyM, averageN int) *SysMon {
+	return &SysMon{
+		addr:     address,
+		everyM:   everyM,
+		averageN: averageN,
 	}
 }
 
-func (s *ClientSysMon) Start() error {
+func (s *SysMon) Start() error {
 	conn, err := grpc.Dial(s.addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return err
@@ -46,15 +38,15 @@ func (s *ClientSysMon) Start() error {
 	return nil
 }
 
-func (s *ClientSysMon) Close() error {
+func (s *SysMon) Close() error {
 	return s.conn.Close()
 }
 
-func (s *ClientSysMon) GetData(f func(data []model.DataToClientStamp)) error {
+func (s *SysMon) GetData(f func([]model.DataToClientStamp)) error {
 	ctx := context.Background()
 	DataStream, err := s.client.SendSysmonDataToClient(ctx, &pb.QueryParam{
-		EveryM:   int32(s.every_m),
-		AverageN: int32(s.average_n),
+		EveryM:   int32(s.everyM),
+		AverageN: int32(s.averageN),
 	})
 	if err != nil {
 		return err

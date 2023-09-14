@@ -3,9 +3,10 @@
 package stat
 
 import (
-	"github.com/filatkinen/sysmon/internal/model"
 	"math/rand"
 	"time"
+
+	"github.com/filatkinen/sysmon/internal/model"
 )
 
 func disksLoad() (model.ElMapType, error) {
@@ -13,9 +14,8 @@ func disksLoad() (model.ElMapType, error) {
 }
 
 func disksUsage() (model.ElMapType, error) {
-
 	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
+	r1 := rand.New(s1) //nolint
 	n1 := r1.Intn(5) + 1
 	disks := []struct {
 		disk string
