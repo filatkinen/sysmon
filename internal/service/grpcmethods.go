@@ -2,12 +2,14 @@ package service
 
 import (
 	"encoding/json"
+	"log"
 	"sort"
 	"strconv"
 	"time"
 
 	pb "github.com/filatkinen/sysmon/internal/grpc/sysmon"
 	"github.com/filatkinen/sysmon/internal/model"
+	"google.golang.org/grpc/peer"
 )
 
 func (s *Service) SendSysmonDataToClient(param *pb.QueryParam,
@@ -19,6 +21,15 @@ func (s *Service) SendSysmonDataToClient(param *pb.QueryParam,
 		ticker.Stop()
 		s.wg.Done()
 	}()
+
+	r, ok := peer.FromContext(server.Context())
+	address := ""
+	if ok {
+		address = r.Addr.String()
+	}
+	log.Printf("new client GRPS:%s. Query params: average %d seconds, query every %d seconds \n",
+		address, param.AverageN, param.EveryM)
+	defer log.Printf("end GRPS connection from client:%s\n", address)
 
 	sendData := func() error {
 		var dataPB pb.Data
