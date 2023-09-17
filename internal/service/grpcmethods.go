@@ -27,9 +27,9 @@ func (s *Service) SendSysmonDataToClient(param *pb.QueryParam,
 	if ok {
 		address = r.Addr.String()
 	}
-	log.Printf("new client GRPS:%s. Query params: average %d seconds, query every %d seconds \n",
+	log.Printf("new client GRPC:%s. Query params: average %d seconds, query every %d seconds \n",
 		address, param.AverageN, param.EveryM)
-	defer log.Printf("end GRPS connection from client:%s\n", address)
+	defer log.Printf("end GRPC connection from client:%s\n", address)
 
 	sendData := func() error {
 		var dataPB pb.Data

@@ -10,19 +10,19 @@ protoc -I  ./internal/grpc/ ./internal/grpc/sysmon.proto   --go-grpc_out=require
 
 #package example
 
-#//
-#//import (
-#//	"fmt"
-#//	"github.com/rafacas/sysstats"
-#//)
-#//
-#//func main() {
-#//	s, err := sysstats.GetLoadAvg()
-#//	if err != nil {
-#//		return
-#//	}
-#//	fmt.Println(s)
-#//
-#//	stats, err := sysstats.GetCpuStatsInterval(1)
-#//	fmt.Println(stats)
-#//}
+//
+//import (
+//	"fmt"
+//	"github.com/rafacas/sysstats"
+//)
+//
+//func main() {
+//	s, err := sysstats.GetLoadAvg()
+//	if err != nil {
+//		return
+//	}
+//	fmt.Println(s)
+//
+//	stats, err := sysstats.GetCpuStatsInterval(1)
+//	fmt.Println(stats)
+//}

@@ -19,7 +19,7 @@ type ServiceConfig struct {
 	LA          bool
 	AvgCPU      bool
 	DisksLoad   bool
-	DisksInfo   bool
+	DisksUse    bool
 	NetworkTop  bool
 	NetworkStat bool
 
@@ -72,7 +72,7 @@ func NewConfig(in string) (ServiceConfig, error) {
 		LA:             viper.GetBool("subsystems.la"),
 		AvgCPU:         viper.GetBool("subsystems.avgcpu"),
 		DisksLoad:      viper.GetBool("subsystems.disksload"),
-		DisksInfo:      viper.GetBool("subsystems.disksinfo"),
+		DisksUse:       viper.GetBool("subsystems.disksuse"),
 		NetworkTop:     viper.GetBool("subsystems.networktop"),
 		NetworkStat:    viper.GetBool("subsystems.networkstat"),
 		Port:           viper.GetString("bindings.port"),

@@ -113,7 +113,7 @@ func (s *Service) getStatData() { //nolint:funlen
 				}
 			}
 			log.Printf("got error quering using function %s, error: %s", funcname, err)
-			return nil
+			//return nil
 		}
 		return m
 	}
@@ -128,7 +128,10 @@ func (s *Service) getStatData() { //nolint:funlen
 	}
 
 	collectStat := func() {
-		var LoadAvg, CPUAvgStats, DisksLoad, DisksInfo, NetworkListen, NetworkStates,
+		var LoadAvg,
+			CPUAvgStats,
+			DisksLoad, DisksUsage,
+			NetworkListen, NetworkStates,
 			TopNetworkProto, TopNetworkTraffic model.ElMapType
 		switch {
 		case s.conf.LA:
@@ -139,9 +142,9 @@ func (s *Service) getStatData() { //nolint:funlen
 			wgService.Add(1)
 			go func() { CPUAvgStats = getstat(s.stat.CPUAvgStats) }()
 			fallthrough
-		case s.conf.DisksInfo:
+		case s.conf.DisksUse:
 			wgService.Add(1)
-			go func() { DisksInfo = getstat(s.stat.DisksUsage) }()
+			go func() { DisksUsage = getstat(s.stat.DisksUsage) }()
 			fallthrough
 		case s.conf.DisksLoad:
 			wgService.Add(1)
@@ -168,11 +171,11 @@ func (s *Service) getStatData() { //nolint:funlen
 		case s.conf.AvgCPU:
 			addstat(&sd, CPUAvgStats, 1)
 			fallthrough
-		case s.conf.DisksInfo:
-			addstat(&sd, DisksInfo, 2)
-			fallthrough
 		case s.conf.DisksLoad:
-			addstat(&sd, DisksLoad, 3)
+			addstat(&sd, DisksLoad, 2)
+			fallthrough
+		case s.conf.DisksUse:
+			addstat(&sd, DisksUsage, 3)
 			fallthrough
 		case s.conf.NetworkStat:
 			addstat(&sd, NetworkListen, 4)

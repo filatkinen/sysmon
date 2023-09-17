@@ -41,3 +41,11 @@ func (s Stat) TopNetworkProto() (model.ElMapType, error) {
 func (s Stat) TopNetworkTraffic() (model.ElMapType, error) {
 	return topNetworkTraffic()
 }
+
+func returnError(elCount int, err error) (model.ElMapType, error) {
+	m := make(model.ElMapType, 1)
+	line := make([]model.Element, elCount)
+	line[0].StringField = err.Error()
+	m["error"] = line
+	return m, err
+}

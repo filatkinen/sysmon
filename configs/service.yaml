@@ -2,7 +2,7 @@ subsystems:
   la: true
   avgcpu: true
   disksload: true
-  disksinfo: true
+  disksuse: true
   networktop: true
   networkstat: true
 
