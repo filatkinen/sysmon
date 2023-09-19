@@ -9,7 +9,6 @@ import (
 
 	"github.com/filatkinen/sysmon/internal/config"
 	"github.com/filatkinen/sysmon/internal/service"
-	"github.com/filatkinen/sysmon/internal/stat"
 )
 
 func main() {
@@ -22,7 +21,7 @@ func main() {
 		log.Fatalf("error reading config file %v", err)
 	}
 
-	srv, err := service.NewService(conf, stat.Stat{})
+	srv, err := service.NewService(conf)
 	if err != nil {
 		log.Fatalf("error creating service sysmon  %v", err)
 	}

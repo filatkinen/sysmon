@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"github.com/filatkinen/sysmon/internal/stat"
 	"log"
 	"net"
 	"runtime"
@@ -24,14 +25,14 @@ type Service struct {
 	wg       sync.WaitGroup
 }
 
-func NewService(serviceConfig config.ServiceConfig, statSource internal.StatGetter) (*Service, error) {
+func NewService(serviceConfig config.ServiceConfig) (*Service, error) {
 	if serviceConfig.Depth < serviceConfig.ScrapeInterval {
 		return nil, errors.New("depth interval cannot be less then scrap interval")
 	}
 	maxElements := int((serviceConfig.Depth / serviceConfig.ScrapeInterval)) + 1
 	log.Printf("Creating sysmon service: %+v\n", serviceConfig)
 	return &Service{
-		stat:     statSource,
+		stat:     stat.New(),
 		conf:     serviceConfig,
 		exitChan: make(chan struct{}),
 		wg:       sync.WaitGroup{},
@@ -41,6 +42,7 @@ func NewService(serviceConfig config.ServiceConfig, statSource internal.StatGett
 			MaxElements: maxElements,
 		},
 	}, nil
+
 }
 
 func (s *Service) Start() error {
@@ -121,7 +123,11 @@ func (s *Service) getStatData() { //nolint:funlen
 	addstat := func(sd *model.StampsData, se model.ElMapType, idx int) {
 		if se != nil {
 			var sedata model.StampsElements
-			sedata.ElMap = se
+			sedata.ElMap = make(model.ElMapType, len(se))
+			for k, v := range se {
+				sedata.ElMap[k] = append([]model.Element(nil), v...)
+			}
+			// sedata.ElMap = se
 			sedata.IdxStampNameHeaders = idx
 			sd.Data = append(sd.Data, sedata)
 		}

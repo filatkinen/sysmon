@@ -11,4 +11,5 @@ type StatGetter interface {
 	NetworkStates() (model.ElMapType, error)
 	TopNetworkProto() (model.ElMapType, error)
 	TopNetworkTraffic() (model.ElMapType, error)
+	Close() error
 }

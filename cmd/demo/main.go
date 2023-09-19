@@ -2,19 +2,30 @@ package main
 
 import (
 	"fmt"
-	"github.com/rafacas/sysstats"
+	"github.com/google/gopacket"
+	_ "github.com/google/gopacket/layers"
+	"github.com/google/gopacket/pcap"
+)
+
+const (
+	// The same default as tcpdump.
+	defaultSnapLen = 262144
 )
 
 func main() {
-	s, err := sysstats.GetLoadAvg()
+	handle, err := pcap.OpenLive("wlp4s0:", defaultSnapLen, true,
+		pcap.BlockForever)
 	if err != nil {
-		return
+		panic(err)
 	}
-	fmt.Println(s)
+	defer handle.Close()
 
-	stat1, err := sysstats.GetDiskUsage()
-	fmt.Println(stat1)
+	//if err := handle.SetBPFFilter("port 3030"); err != nil {
+	//	panic(err)
+	//}
 
-	//stats, err := sysstats.GetCpuStatsInterval(1)
-	//fmt.Println(stats)
+	packets := gopacket.NewPacketSource(handle, handle.LinkType()).Packets()
+	for pkt := range packets {
+		fmt.Println(pkt.Metadata().CaptureInfo)
+	}
 }
