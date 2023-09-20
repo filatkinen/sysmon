@@ -26,6 +26,8 @@ func main() {
 
 	packets := gopacket.NewPacketSource(handle, handle.LinkType()).Packets()
 	for pkt := range packets {
-		fmt.Println(pkt.Metadata().CaptureInfo)
+		fmt.Printf("%+v\n", pkt.Metadata().CaptureInfo, pkt.TransportLayer())
+		fmt.Printf("%+v\n", pkt.LinkLayer().LayerContents())
+		break
 	}
 }

@@ -91,6 +91,7 @@ func (s *Service) Stop() error {
 	close(s.exitChan)
 	s.wg.Wait()
 	s.conn.Stop()
+	s.stat.Close()
 	return nil
 }
 

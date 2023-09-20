@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"log"
 	"os/exec"
+	"time"
 )
 
 func main() {
@@ -17,13 +19,15 @@ func main() {
 	//	fmt.Println(f.Name)
 	//}
 	//netstat, err := exec.LookPath("netstat")
-	netstat, err := exec.LookPath("sar")
+	netstat, err := exec.LookPath("ping")
 	if err != nil {
 		return
 	}
 
 	//cmd := exec.Command(netstat, "-c")
-	cmd := exec.Command(netstat, "-n", "DEV", "1", "4")
+	//cmd := exec.Command(netstat, "ya.ru")
+	ctx, cancel := context.WithCancel(context.Background())
+	cmd := exec.CommandContext(ctx, netstat, "ya.ru")
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Fatal(err)
@@ -37,6 +41,12 @@ func main() {
 	if err := cmd.Start(); err != nil {
 		log.Fatal(err)
 	}
+
+	go func() {
+		time.Sleep(time.Second * 3)
+		cancel()
+	}()
+
 	if err := cmd.Wait(); err != nil {
 		log.Fatal(err)
 	}
