@@ -1,6 +1,6 @@
 module github.com/filatkinen/sysmon
 
-go 1.20
+go 1.21
 
 require (
 	github.com/GoryMoon/gocui v1.0.1

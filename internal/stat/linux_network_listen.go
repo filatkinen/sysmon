@@ -110,6 +110,9 @@ func networkListenQueryParse(in string) (NetListen, error) {
 	// Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name
 	// tcp        0      0 0.0.0.0:9090            0.0.0.0:*               LISTEN      0          24470      2155/docker-proxy: 1
 	// tcp        0      0 127.0.0.54:53           0.0.0.0:*               LISTEN      996        34126      717/systemd-resolve
+	if fields[5] == "LISTEN" {
+		fields = append(fields[:5], fields[6:]...)
+	}
 	for i, v := range fields {
 		switch i {
 		case 0:
@@ -121,9 +124,9 @@ func networkListenQueryParse(in string) (NetListen, error) {
 			}
 			netListen.Port = v[idx+1:]
 			netListen.LocalAddress = v[:idx]
-		case 6:
+		case 5:
 			netListen.User = v
-		case 8:
+		case 7:
 			if v == "-" {
 				netListen.Pid = v
 				netListen.Command = v
