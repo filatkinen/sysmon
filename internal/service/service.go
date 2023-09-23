@@ -272,6 +272,9 @@ func copyStampsData(source model.StampsData) *model.StampsData {
 
 func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData { //nolint:gocognit
 	var m model.StampsData
+	if len(s1.Data) != len(s2.Data) {
+		return &s1
+	}
 	m.Data = make([]model.StampsElements, len(s1.Data))
 	for i := range s1.Data {
 		hashI := make(map[string]bool, len(s1.Data[i].ElMap))
