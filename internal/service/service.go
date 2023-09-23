@@ -106,7 +106,7 @@ func (s *Service) getStatData() { //nolint:funlen
 	getstat := func(f statFunc) model.ElMapType {
 		defer wgService.Done()
 		m, err := f()
-		if err != nil {
+		if err != nil && !errors.Is(err, stat.ErrNotImplemented) {
 			funcname := "unknown"
 			pc, _, _, ok := runtime.Caller(0)
 			if ok {
@@ -116,7 +116,6 @@ func (s *Service) getStatData() { //nolint:funlen
 				}
 			}
 			log.Printf("got error quering using function %s, error: %s", funcname, err)
-			//return nil
 		}
 		return m
 	}
