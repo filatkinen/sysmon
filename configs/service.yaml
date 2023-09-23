@@ -3,8 +3,8 @@ subsystems:
   avgcpu: true
   disksload: true
   disksuse: true
-  networktop: true
   networkstat: true
+  networktop: true
 
 scrapeinterval: 1s  #default time=5s
 cleaninterval: 1m  #default time=5m

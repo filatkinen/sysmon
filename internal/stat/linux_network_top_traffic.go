@@ -4,7 +4,6 @@ package stat
 
 import (
 	"github.com/filatkinen/sysmon/internal/model"
-	"log"
 	"time"
 )
 
@@ -25,8 +24,6 @@ func topNetworkTraffic() (model.ElMapType, error) {
 
 	now := time.Now()
 	seconds := now.Sub(netTopTrafficLastCheck).Seconds()
-
-	log.Println("traffic", len(netTopTrafficValue), seconds)
 
 	m := make(model.ElMapType, len(netTopTrafficValue))
 	for k, v := range netTopTrafficValue {

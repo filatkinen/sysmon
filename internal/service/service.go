@@ -254,7 +254,7 @@ func (s *Service) countDataClient(averageN int) (*model.StampsData, bool) {
 	for count := 2; count <= quantityCl; count++ {
 		clientData = sumStampsData(*clientData, s.data.Elements[s.data.Index[quantityElements-count]])
 	}
-	averageStampsData(clientData)
+	averageStampsData(clientData, quantityCl)
 	return clientData, true
 }
 
@@ -295,20 +295,14 @@ func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData {
 					if v.CountAble {
 						v.NumberField += s2.Data[i].ElMap[k][idx].NumberField
 					}
-					if v.Count == 0 {
-						v.Count = 1
-					}
-					v.Count++
 					m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], v)
 				}
 			case ok1:
 				for _, v := range s1.Data[i].ElMap[k] {
-					v.Count = 1
 					m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], v)
 				}
 			case ok2:
 				for _, v := range s2.Data[i].ElMap[k] {
-					v.Count = 1
 					m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], v)
 				}
 			}
@@ -317,17 +311,29 @@ func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData {
 	return &m
 }
 
-func averageStampsData(s *model.StampsData) {
+func averageStampsData(s *model.StampsData, count int) {
 	for i := range s.Data {
+		var sum float64
 		for k := range s.Data[i].ElMap {
 			for idx := range s.Data[i].ElMap[k] {
+				if s.Data[i].ElMap[k][idx].PercentAble {
+					sum += s.Data[i].ElMap[k][idx].NumberField
+					continue
+				}
 				if s.Data[i].ElMap[k][idx].CountAble {
-					if s.Data[i].ElMap[k][idx].Count == 0 {
-						s.Data[i].ElMap[k][idx].Count = 1
-					}
-					s.Data[i].ElMap[k][idx].NumberField /= float64(s.Data[i].ElMap[k][idx].Count)
+					s.Data[i].ElMap[k][idx].NumberField /= float64(count)
 				}
 			}
+		}
+		if sum > 0 {
+			for k := range s.Data[i].ElMap {
+				for idx := range s.Data[i].ElMap[k] {
+					if s.Data[i].ElMap[k][idx].PercentAble {
+						s.Data[i].ElMap[k][idx].NumberField = (s.Data[i].ElMap[k][idx].NumberField / sum) * 100
+					}
+				}
+			}
+
 		}
 	}
 }

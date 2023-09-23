@@ -106,7 +106,7 @@ func topNetworkStartCollect() error {
 		if err := cmd.Wait(); err != nil {
 			e := ctxCollect.Err()
 			if !errors.Is(e, context.Canceled) {
-				log.Printf("module networkTop-: got error cmd.Wait  %s\n", err)
+				log.Printf("module networkTop: got error cmd.Wait  %s\n", err)
 				netTopLock.Lock()
 				errorStarting = errors.New(fmt.Sprintf("unable to start %s : %s", command, err))
 				netTopLock.Unlock()
@@ -127,9 +127,6 @@ func topNetworkTrafficStop() {
 }
 
 func collect(str string) {
-	//log.Print(str)
-	//now := time.Now()
-	//defer log.Println(time.Since(now))
 	fields := strings.Fields(str)
 	lnf := len(fields)
 	if lnf < 7 {
@@ -201,9 +198,5 @@ func collect(str string) {
 		netTopProtoValue[proto.proto] = protoVal
 	} else {
 		netTopProtoValue[proto.proto] = proto
-	}
-
-	if protoField == "ICMP" {
-		log.Print("---------", traf, proto)
 	}
 }

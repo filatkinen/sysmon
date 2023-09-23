@@ -4,34 +4,34 @@ package stat
 
 import "github.com/filatkinen/sysmon/internal/model"
 
-func loadAvg() (model.DataLoadAvg, error) {
-	return model.DataLoadAvg{}, ErrNotImplemented
+func loadAvg() (model.ElMapType, error) {
+	return returnError(0, ErrNotImplemented)
 }
 
-func cpuAvgStats() (model.DataCpuAvgStats, error) {
-	return model.DataCpuAvgStats{}, ErrNotImplemented
+func cpuAvgStats() (model.ElMapType, error) {
+	return returnError(1, ErrNotImplemented)
 }
 
-func disksLoad() ([]model.DataDisksLoad, error) {
-	return []model.DataDisksLoad{}, ErrNotImplemented
+func disksLoad() (model.ElMapType, error) {
+	return returnError(2, ErrNotImplemented)
 }
 
-func disksUsage() ([]model.DataDisksUsage, error) {
-	return []model.DataDisksUsage{}, ErrNotImplemented
+func disksUsage() (model.ElMapType, error) {
+	return returnError(3, ErrNotImplemented)
 }
 
-func networkListen() ([]model.DataNetworkListen, error) {
-	return []model.DataNetworkListen{}, ErrNotImplemented
+func networkListen() (model.ElMapType, error) {
+	return returnError(4, ErrNotImplemented)
 }
 
-func networkStates() ([]model.DataNetworkStates, error) {
-	return []model.DataNetworkStates{}, ErrNotImplemented
+func networkStates() (model.ElMapType, error) {
+	return returnError(5, ErrNotImplemented)
 }
 
-func topNetworkProto() ([]model.DataTopNetworkProto, error) {
-	return []model.DataTopNetworkProto{}, ErrNotImplemented
+func topNetworkProto() (model.ElMapType, error) {
+	return returnError(6, ErrNotImplemented)
 }
 
-func topNetworkTraffic() ([]model.DataTopNetworkTraffic, error) {
-	return []model.DataTopNetworkTraffic{}, ErrNotImplemented
+func topNetworkTraffic() (model.ElMapType, error) {
+	return returnError(7, ErrNotImplemented)
 }

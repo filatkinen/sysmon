@@ -13,6 +13,7 @@ const (
 )
 
 func main() {
+
 	handle, err := pcap.OpenLive("wlp4s0:", defaultSnapLen, true,
 		pcap.BlockForever)
 	if err != nil {

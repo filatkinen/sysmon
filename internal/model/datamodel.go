@@ -68,7 +68,7 @@ type Element struct {
 	StringField  string
 	NumberField  float64
 	DecimalField int
-	Count        int
+	PercentAble  bool
 }
 
 type ElMapType map[string][]Element
