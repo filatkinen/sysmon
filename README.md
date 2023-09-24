@@ -113,3 +113,5 @@ make test
 ```
 make test-integration
 ```
+
+- [Евгений Филаткин](https://github.com/filatkinen)
