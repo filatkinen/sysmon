@@ -3,10 +3,11 @@
 package stat
 
 import (
-	"github.com/filatkinen/sysmon/internal/model"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/filatkinen/sysmon/internal/model"
 )
 
 func loadAvg() (model.ElMapType, error) {

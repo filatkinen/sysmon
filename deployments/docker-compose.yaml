@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+
+  sysmon:
+    build:
+      context: ../
+      dockerfile: ./deployments/Dockerfile
+    container_name: sysmon-service
+    restart: always
+    tty: true
+    stdin_open: true
+    ports:
+      - 50051:50051
+    networks:
+      - local
+
+networks:
+  local:

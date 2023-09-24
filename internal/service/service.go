@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"github.com/filatkinen/sysmon/internal/stat"
 	"log"
 	"net"
 	"runtime"
@@ -13,6 +12,7 @@ import (
 	"github.com/filatkinen/sysmon/internal/config"
 	pb "github.com/filatkinen/sysmon/internal/grpc/sysmon"
 	"github.com/filatkinen/sysmon/internal/model"
+	"github.com/filatkinen/sysmon/internal/stat"
 	"google.golang.org/grpc"
 )
 
@@ -23,16 +23,17 @@ type Service struct {
 	conn     *grpc.Server
 	exitChan chan struct{}
 	wg       sync.WaitGroup
+	connLock sync.Mutex
 }
 
-func NewService(serviceConfig config.ServiceConfig) (*Service, error) {
+func NewService(serviceConfig config.ServiceConfig, stat internal.StatGetter) (*Service, error) {
 	if serviceConfig.Depth < serviceConfig.ScrapeInterval {
 		return nil, errors.New("depth interval cannot be less then scrap interval")
 	}
 	maxElements := int((serviceConfig.Depth / serviceConfig.ScrapeInterval)) + 1
 	log.Printf("Creating sysmon service: %+v\n", serviceConfig)
 	return &Service{
-		stat:     stat.New(),
+		stat:     stat,
 		conf:     serviceConfig,
 		exitChan: make(chan struct{}),
 		wg:       sync.WaitGroup{},
@@ -42,7 +43,6 @@ func NewService(serviceConfig config.ServiceConfig) (*Service, error) {
 			MaxElements: maxElements,
 		},
 	}, nil
-
 }
 
 func (s *Service) Start() error {
@@ -71,7 +71,9 @@ func (s *Service) Start() error {
 }
 
 func (s *Service) startGRPC() error {
+	s.connLock.Lock()
 	s.conn = grpc.NewServer()
+	s.connLock.Unlock()
 	lis, err := net.Listen("tcp", net.JoinHostPort(s.conf.Address, s.conf.Port))
 	if err != nil {
 		return err
@@ -89,22 +91,24 @@ func (s *Service) Stop() error {
 	log.Printf("Stopping sysmon service...\n")
 	log.Printf("Stopping sysmon service. GRPC subsystem...\n")
 	close(s.exitChan)
-	s.wg.Wait()
+
+	s.connLock.Lock()
 	s.conn.Stop()
+	s.connLock.Unlock()
+
 	s.stat.Close()
+	s.wg.Wait()
 	return nil
 }
 
-func (s *Service) getStatData() { //nolint:funlen
+func (s *Service) getStatData() { //nolint:funlen,gocognit
 	ticker := time.NewTicker(s.conf.ScrapeInterval)
 	defer func() {
 		ticker.Stop()
 	}()
 
 	type statFunc = func() (model.ElMapType, error)
-	var wgService sync.WaitGroup
 	getstat := func(f statFunc) model.ElMapType {
-		defer wgService.Done()
 		m, err := f()
 		if err != nil && !errors.Is(err, stat.ErrNotImplemented) {
 			funcname := "unknown"
@@ -127,67 +131,65 @@ func (s *Service) getStatData() { //nolint:funlen
 			for k, v := range se {
 				sedata.ElMap[k] = append([]model.Element(nil), v...)
 			}
-			// sedata.ElMap = se
 			sedata.IdxStampNameHeaders = idx
 			sd.Data = append(sd.Data, sedata)
 		}
 	}
 
 	collectStat := func() {
+		var wgService sync.WaitGroup
 		var LoadAvg,
 			CPUAvgStats,
 			DisksLoad, DisksUsage,
 			NetworkListen, NetworkStates,
 			TopNetworkProto, TopNetworkTraffic model.ElMapType
-		switch {
-		case s.conf.LA:
+		if s.conf.LA {
 			wgService.Add(1)
-			go func() { LoadAvg = getstat(s.stat.LoadAvg) }()
-			fallthrough
-		case s.conf.AvgCPU:
+			go func() { defer wgService.Done(); LoadAvg = getstat(s.stat.LoadAvg) }()
+		}
+		if s.conf.AvgCPU {
 			wgService.Add(1)
-			go func() { CPUAvgStats = getstat(s.stat.CPUAvgStats) }()
-			fallthrough
-		case s.conf.DisksUse:
+			go func() { defer wgService.Done(); CPUAvgStats = getstat(s.stat.CPUAvgStats) }()
+		}
+		if s.conf.DisksUse {
 			wgService.Add(1)
-			go func() { DisksUsage = getstat(s.stat.DisksUsage) }()
-			fallthrough
-		case s.conf.DisksLoad:
+			go func() { defer wgService.Done(); DisksUsage = getstat(s.stat.DisksUsage) }()
+		}
+		if s.conf.DisksLoad {
 			wgService.Add(1)
-			go func() { DisksLoad = getstat(s.stat.DisksLoad) }()
-			fallthrough
-		case s.conf.NetworkStat:
+			go func() { defer wgService.Done(); DisksLoad = getstat(s.stat.DisksLoad) }()
+		}
+		if s.conf.NetworkStat {
 			wgService.Add(2)
-			go func() { NetworkListen = getstat(s.stat.NetworkListen) }()
-			go func() { NetworkStates = getstat(s.stat.NetworkStates) }()
-			fallthrough
-		case s.conf.NetworkTop:
+			go func() { defer wgService.Done(); NetworkListen = getstat(s.stat.NetworkListen) }()
+			go func() { defer wgService.Done(); NetworkStates = getstat(s.stat.NetworkStates) }()
+		}
+		if s.conf.NetworkTop {
 			wgService.Add(2)
-			go func() { TopNetworkProto = getstat(s.stat.TopNetworkProto) }()
-			go func() { TopNetworkTraffic = getstat(s.stat.TopNetworkTraffic) }()
+			go func() { defer wgService.Done(); TopNetworkProto = getstat(s.stat.TopNetworkProto) }()
+			go func() { defer wgService.Done(); TopNetworkTraffic = getstat(s.stat.TopNetworkTraffic) }()
 		}
 
 		wgService.Wait()
 		var sd model.StampsData
 
-		switch {
-		case s.conf.LA:
+		if s.conf.LA {
 			addstat(&sd, LoadAvg, 0)
-			fallthrough
-		case s.conf.AvgCPU:
+		}
+		if s.conf.AvgCPU {
 			addstat(&sd, CPUAvgStats, 1)
-			fallthrough
-		case s.conf.DisksLoad:
+		}
+		if s.conf.DisksLoad {
 			addstat(&sd, DisksLoad, 2)
-			fallthrough
-		case s.conf.DisksUse:
+		}
+		if s.conf.DisksUse {
 			addstat(&sd, DisksUsage, 3)
-			fallthrough
-		case s.conf.NetworkStat:
+		}
+		if s.conf.NetworkStat {
 			addstat(&sd, NetworkListen, 4)
 			addstat(&sd, NetworkStates, 5)
-			fallthrough
-		case s.conf.NetworkTop:
+		}
+		if s.conf.NetworkTop {
 			addstat(&sd, TopNetworkProto, 6)
 			addstat(&sd, TopNetworkTraffic, 7)
 		}
@@ -233,7 +235,7 @@ func (s *Service) cleanOldData() {
 	}
 }
 
-func (s *Service) countDataClient(averageN int) (*model.StampsData, bool) {
+func (s *Service) CountDataClient(averageN int) (*model.StampsData, bool) {
 	s.data.Lock.RLock()
 	defer s.data.Lock.RUnlock()
 
@@ -270,7 +272,7 @@ func copyStampsData(source model.StampsData) *model.StampsData {
 	return &m
 }
 
-func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData { //nolint:gocognit
+func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData {
 	var m model.StampsData
 	if len(s1.Data) != len(s2.Data) {
 		return &s1
@@ -300,13 +302,9 @@ func sumStampsData(s1 model.StampsData, s2 model.StampsData) *model.StampsData {
 					m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], v)
 				}
 			case ok1:
-				for _, v := range s1.Data[i].ElMap[k] {
-					m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], v)
-				}
+				m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], s1.Data[i].ElMap[k]...)
 			case ok2:
-				for _, v := range s2.Data[i].ElMap[k] {
-					m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], v)
-				}
+				m.Data[i].ElMap[k] = append(m.Data[i].ElMap[k], s2.Data[i].ElMap[k]...)
 			}
 		}
 	}
@@ -335,7 +333,6 @@ func averageStampsData(s *model.StampsData, count int) {
 					}
 				}
 			}
-
 		}
 	}
 }

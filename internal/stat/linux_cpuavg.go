@@ -4,11 +4,12 @@ package stat
 
 import (
 	"bufio"
-	"github.com/filatkinen/sysmon/internal/model"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/filatkinen/sysmon/internal/model"
 )
 
 func cpuAvgStats() (model.ElMapType, error) {

@@ -6,10 +6,11 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"github.com/filatkinen/sysmon/internal/model"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/filatkinen/sysmon/internal/model"
 )
 
 var errorSkipLine = errors.New("skip line")
@@ -81,7 +82,6 @@ func disksLoadQuery() ([]DiskLoad, error) {
 		disksload = append(disksload, diskload)
 	}
 	return disksload, nil
-
 }
 
 func disksLoadQueryParse(load string) (DiskLoad, error) {
@@ -89,7 +89,7 @@ func disksLoadQueryParse(load string) (DiskLoad, error) {
 	if len(fields) == 0 {
 		return DiskLoad{}, errorSkipLine
 	}
-	if strings.Index(fields[0], "loop") != -1 {
+	if strings.Contains(fields[0], "loop") {
 		return DiskLoad{}, errorSkipLine
 	}
 	var diskLoad DiskLoad

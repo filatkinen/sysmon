@@ -10,6 +10,12 @@ import (
 )
 
 func main() {
+	var errClient error
+	defer func() {
+		if errClient != nil {
+			log.Printf("got error while receiving data from server: %s", errClient)
+		}
+	}()
 	var (
 		everyM   = flag.Int("M", 5, "average period")
 		averageN = flag.Int("N", 15, "query period")
@@ -21,7 +27,8 @@ func main() {
 
 	c, err := NewClientView()
 	if err != nil {
-		log.Fatalf("error starting cui client: %s", err)
+		log.Printf("error starting cui client: %s", err)
+		return
 	}
 
 	closeChan := make(chan struct{})
@@ -33,10 +40,6 @@ func main() {
 			log.Println(err)
 		}
 		closeChan <- struct{}{}
-	}()
-
-	defer func() {
-		c.Stop()
 	}()
 
 	// Starting sysmon GRPC client
@@ -55,14 +58,12 @@ func main() {
 
 	// Starting process getting data from GRPC server
 	go func() {
-		err := cl.GetData(func(data []model.DataToClientStamp) {
+		errClient = cl.GetData(func(data []model.DataToClientStamp) {
 			c.GetData(data)
 		})
-		if err != nil {
-			log.Printf("got error while receiving data from server: %s", err)
-		}
 		closeChan <- struct{}{}
 	}()
 
 	<-closeChan
+	c.Stop()
 }

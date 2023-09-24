@@ -6,9 +6,10 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"github.com/filatkinen/sysmon/internal/model"
 	"os/exec"
 	"strings"
+
+	"github.com/filatkinen/sysmon/internal/model"
 )
 
 type NetStates struct {
@@ -41,7 +42,6 @@ func networkStates() (model.ElMapType, error) {
 		m[v.Status] = line
 	}
 	return m, nil
-
 }
 
 func networkStatesQuery() ([]NetStates, error) {
@@ -52,7 +52,6 @@ func networkStatesQuery() ([]NetStates, error) {
 	}
 
 	out, err := exec.Command(ss, "-at").Output()
-
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func networkStatesQuery() ([]NetStates, error) {
 		if err != nil {
 			return nil, err
 		}
-		m[netStatus] = m[netStatus] + 1
+		m[netStatus]++
 	}
 	for k, v := range m {
 		netStatesSlice = append(netStatesSlice, NetStates{

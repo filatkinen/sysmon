@@ -6,10 +6,11 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"github.com/filatkinen/sysmon/internal/model"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/filatkinen/sysmon/internal/model"
 )
 
 type NetListen struct {
@@ -68,7 +69,6 @@ func networkListen() (model.ElMapType, error) {
 		m[sb.String()] = line
 	}
 	return m, nil
-
 }
 
 func networkListenQuery() ([]NetListen, error) {
@@ -79,7 +79,6 @@ func networkListenQuery() ([]NetListen, error) {
 	}
 
 	out, err := exec.Command(netstat, "-ntlpue").Output()
-
 	if err != nil {
 		return nil, err
 	}
@@ -107,9 +106,6 @@ func networkListenQueryParse(in string) (NetListen, error) {
 		return NetListen{}, errors.New("couldn't parse netstat because there less than 8 fields")
 	}
 	netListen := NetListen{}
-	// Proto Recv-Q Send-Q Local Address           Foreign Address         State       User       Inode      PID/Program name
-	// tcp        0      0 0.0.0.0:9090            0.0.0.0:*               LISTEN      0          24470      2155/docker-proxy: 1
-	// tcp        0      0 127.0.0.54:53           0.0.0.0:*               LISTEN      996        34126      717/systemd-resolve
 	if fields[5] == "LISTEN" {
 		fields = append(fields[:5], fields[6:]...)
 	}
@@ -132,7 +128,7 @@ func networkListenQueryParse(in string) (NetListen, error) {
 				netListen.Command = v
 				continue
 			}
-			idx := strings.Index(v, "/")
+			idx := strings.Index(v, "/") //nolint:gocritic
 			if idx == -1 {
 				return NetListen{}, errors.New("got error parsing PID/Program name")
 			}

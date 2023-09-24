@@ -2,17 +2,13 @@ package stat
 
 import (
 	"errors"
+
 	"github.com/filatkinen/sysmon/internal/model"
 )
 
 var ErrNotImplemented = errors.New("not implemented")
 
-type Stat struct {
-}
-
-func New() *Stat {
-	return &Stat{}
-}
+type Stat struct{}
 
 func (s *Stat) LoadAvg() (model.ElMapType, error) {
 	return loadAvg()

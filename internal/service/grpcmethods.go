@@ -33,7 +33,7 @@ func (s *Service) SendSysmonDataToClient(param *pb.QueryParam,
 
 	sendData := func() error {
 		var dataPB pb.Data
-		dataSevice, dataReady := s.countDataClient(int(param.AverageN))
+		dataSevice, dataReady := s.CountDataClient(int(param.AverageN))
 		if dataReady {
 			r := prepareData(dataSevice)
 			b, e := json.Marshal(&r)

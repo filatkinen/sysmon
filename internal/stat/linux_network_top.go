@@ -43,7 +43,6 @@ var (
 	ctxCollect    context.Context
 	cancelCollect context.CancelFunc
 	wgCollect     sync.WaitGroup
-	exitChan      = make(chan struct{})
 
 	errorStarting error
 )
@@ -57,7 +56,6 @@ func topNetworkStartCollect() error {
 	wasStartSubSystem = true
 
 	command, err := exec.LookPath("tcpdump")
-	//command, err := exec.LookPath("ping")
 	if err != nil {
 		log.Printf("module networkTop: can not find command %s\n", err)
 		errorStarting = err
@@ -67,7 +65,6 @@ func topNetworkStartCollect() error {
 	ctxCollect, cancelCollect = context.WithCancel(context.Background())
 
 	cmd := exec.CommandContext(ctxCollect, command, "-i", "any", "-nt")
-	//cmd := exec.CommandContext(ctxCollect, command, "ya.ru")
 	cmdReader, err := cmd.StdoutPipe()
 	if err != nil {
 		log.Printf("module networkTop: can not make cmd.StdoutPipe() %s\n", err)
@@ -83,7 +80,6 @@ func topNetworkStartCollect() error {
 		for scanner.Scan() {
 			collect(scanner.Text())
 		}
-
 	}()
 
 	if err := cmd.Start(); err != nil {
@@ -96,19 +92,12 @@ func topNetworkStartCollect() error {
 	wgCollect.Add(1)
 	go func() {
 		defer wgCollect.Done()
-		<-exitChan
-		cancelCollect()
-	}()
-
-	wgCollect.Add(1)
-	go func() {
-		defer wgCollect.Done()
 		if err := cmd.Wait(); err != nil {
 			e := ctxCollect.Err()
 			if !errors.Is(e, context.Canceled) {
 				log.Printf("module networkTop: got error cmd.Wait  %s\n", err)
 				netTopLock.Lock()
-				errorStarting = errors.New(fmt.Sprintf("unable to start %s : %s", command, err))
+				errorStarting = fmt.Errorf("unable to start %s : %w", command, err)
 				netTopLock.Unlock()
 			}
 		}
@@ -122,7 +111,6 @@ func topNetworkTrafficStop() {
 	if ctxCollect != nil {
 		cancelCollect()
 	}
-	exitChan <- struct{}{}
 	wgCollect.Wait()
 }
 
@@ -172,7 +160,6 @@ func collect(str string) {
 		if idx := strings.LastIndex(dst, "."); idx != -1 {
 			dst = dst[:idx] + ":" + dst[idx+1:]
 		}
-
 	}
 
 	traf.sourceIPPort = src

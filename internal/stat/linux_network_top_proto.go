@@ -49,5 +49,4 @@ func topNetworkProto() (model.ElMapType, error) {
 
 	clear(netTopProtoValue)
 	return m, nil
-	//return returnZeroSlice(headersLen)
 }

@@ -6,10 +6,11 @@ import (
 	"bufio"
 	"bytes"
 	"errors"
-	"github.com/filatkinen/sysmon/internal/model"
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/filatkinen/sysmon/internal/model"
 )
 
 var ErrorDiffValueDiskLoad = errors.New("diff disks set or result empty")
@@ -107,7 +108,6 @@ func disksUsageQuery(args string) (map[string]DiskUsage, []string, error) {
 	}
 
 	out, err := exec.Command(df, args).Output()
-
 	if err != nil {
 		return nil, nil, err
 	}
@@ -137,7 +137,7 @@ func disksUsageQueryParse(usage string) (diskUsage DiskUsage, err error) {
 
 	// Check there are 7 fields
 	if len(fields) != 7 {
-		return DiskUsage{}, errors.New("Couldn't parse disk usage because there aren't 7 fields")
+		return DiskUsage{}, errors.New("couldn't parse disk usage because there aren't 7 fields")
 	}
 
 	// Parse fields
