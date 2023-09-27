@@ -14,25 +14,6 @@ message QueryParam {
   int32 average_n = 2;
 }
 
-//Data:
-//  Header1:
-//     Line1: el, el
-//     Line2: el, el
-//  Header2:
-//     Line1: el, el, el
-//     Line2: el, el, el
-//     Line3: el, el, el
-//message Data {
-//  message Element {
-//    string header =1;
-//    message ElementData{
-//      repeated string  el=1;
-//    }
-//    repeated ElementData line =2;
-//  }
-//  repeated Element data = 1;
-//}
-
 message Data {
   bytes data =1;
 }

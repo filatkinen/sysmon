@@ -30,16 +30,16 @@ func main() {
 	exitChan := make(chan os.Signal, 1)
 	signal.Notify(exitChan, syscall.SIGINT, syscall.SIGTERM, syscall.SIGHUP)
 
-	signalFailedStart := make(chan struct{})
+	signalExitService := make(chan struct{})
 	go func() {
 		if err = srv.Start(); err != nil {
 			log.Println("failed to start service: " + err.Error())
 		}
-		signalFailedStart <- struct{}{}
+		signalExitService <- struct{}{}
 	}()
 
 	select {
-	case <-signalFailedStart:
+	case <-signalExitService:
 	case sig := <-exitChan:
 		log.Printf("Got exit signal %d. Exiting sysmon service\n", sig)
 		if err = srv.Stop(); err != nil {
